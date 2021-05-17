@@ -39,6 +39,11 @@
 
 #include <string>
 #include <stdint.h>
+
+#ifdef HAVE_CRC32
+#include <crc32c/crc32c.h>
+#endif
+
 #ifdef SNAPPY
 #include <snappy.h>
 #endif
@@ -171,6 +176,17 @@ inline bool Snappy_Uncompress(const char* input, size_t length,
 
 inline bool GetHeapProfile(void (*func)(void*, const char*, int), void* arg) {
   return false;
+}
+
+inline uint32_t AcceleratedCRC32C(uint32_t crc, const char* buf, size_t size) {
+#if HAVE_CRC32C
+  return ::crc32c::Extend(crc, reinterpret_cast<const uint8_t*>(buf), size);
+#else
+  (void)crc;
+  (void)buf;
+  (void)size;
+  return 0;
+#endif
 }
 
 }
